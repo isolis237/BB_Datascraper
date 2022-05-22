@@ -1,0 +1,60 @@
+{
+    "Thursday, April 7, 2022": [
+        {
+            "Away": {
+                "Houston Astros": "3"
+            },
+            "Home": {
+                "Los Angeles Angels": "1"
+            }
+        },
+        {
+            "Away": {
+                "San Diego Padres": "2"
+            },
+            "Home": {
+                "Arizona D'Backs": "4"
+            }
+        },
+        {
+            "Away": {
+                "Cincinnati Reds": "6"
+            },
+            "Home": {
+                "Atlanta Braves": "3"
+            }
+        },
+        {
+            "Away": {
+                "Milwaukee Brewers": "4"
+            },
+            "Home": {
+                "Chicago Cubs": "5"
+            }
+        },
+        {
+            "Away": {
+                "Cleveland Guardians": "1"
+            },
+            "Home": {
+                "Kansas City Royals": "3"
+            }
+        },
+        {
+            "Away": {
+                "Pittsburgh Pirates": "0"
+            },
+            "Home": {
+                "St. Louis Cardinals": "9"
+            }
+        },
+        {
+            "Away": {
+                "New York Mets": "5"
+            },
+            "Home": {
+                "Washington Nationals": "1"
+            }
+        }
+    ]
+}
