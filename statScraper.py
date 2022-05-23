@@ -3,6 +3,63 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 import json
+import time
+from datetime import date as dt
+
+todays_date = dt.fromisoformat(time.strftime('%Y-%m-%d',time.gmtime()))
+year = 2022
+teams_east = ['nyy','tbr','tor','bal','bos','nym','phi','atl','mia','wsn']
+teams_central = ['min','chw','cle','kcr','det','mil','stl','pit','chc','cin']
+teams_west = ['hou','laa','sea','tex','oak','lad','sdp','sfg','ari','col']
+
+all_teams = teams_central + teams_west + teams_east
+
+team_dict = {
+    "Arizona D'Backs" : 'ARI',
+    "Atlanta Braves": 'ATL',
+    "Baltimore Orioles": 'BAL',
+    "Boston Red Sox": 'BOS',
+    "Chicago Cubs": 'CHC',
+    "Chicago White Sox": 'CHI',
+    "Cincinnati Reds": 'CIN',
+    "Cleveland Guardians": 'CLE',
+    "Colorado Rockies": "COL",
+    "Detroit Tigers": 'DET',
+    "Houston Astros": "HOU",
+    "Kansas City Royals": 'KCR',
+    "Los Angeles Angels": "LAA",
+    "Los Angeles Dodgers": "LAD",
+    "Miami Marlins": "MIA",
+    "Milwaukee Brewers": "MIL",
+    "Minnesota Twins": "MIN",
+    "New York Mets": "NYM",
+    "New York Yankees": "NYY",
+    "Oakland Athletics": "OAK",
+    "Philadelphia Phillies": "PHI",
+    "Pittsburgh Pirates": "PIT",
+    "San Diego Padres": "SDP",
+    "San Francisco Giants": "SFG",
+    "Seattle Mariners": "SEA",
+    "St. Louis Cardinals": "STL",
+    "Tampa Bay Rays": "TBR",
+    "Texas Rangers": "TEX",
+    "Toronto Blue Jays": "TOR",
+    "Washington Nationals": "WSH"
+}
+date_dict = {
+    'January': 1,
+    'February': 2,
+    'March': 3,
+    "April": 4,
+    'May': 5,
+    'June': 6,
+    'July': 7,
+    'August': 8,
+    'September': 9,
+    'October': 10,
+    'November': 11,
+    'December': 12
+}
 
 def getTeamBatting(team):
     website = 'https://www.baseball-reference.com/'
@@ -87,7 +144,7 @@ def getTeamRecords():
     driver.quit()
     return data
 
-def getSchedule():
+def getFullSchedule():
     website = 'https://www.baseball-reference.com/leagues/MLB-schedule.shtml'
     path = './chromedriver'
     driver = webdriver.Chrome(path)
@@ -97,42 +154,53 @@ def getSchedule():
 
     all_matchups = driver.find_element(By.XPATH, '//div[@class="section_content"]')
     daily_matchups = all_matchups.find_elements(By.XPATH, './/div')
-    for entry in range(1):#range(len(daily_matchups)):
-        #code works for range up to "today"
-        #find way to update games from previously selected date up to today (last day in dataset? to today)
+    for entry in range(len(daily_matchups)):
         date = daily_matchups[entry].find_element(By.XPATH,'.//h3').text
+        
+        if date == "Today's Games":
+            date = todays_date
+        else:
+            date = date.split(', ')[1]
+            month = date.split(' ')[0]
+            day = date.split(' ')[1]
+            month = date_dict[month]
+            date = dt.fromisoformat(dt(int(year),int(month),int(day)).isoformat())
+        
         games = daily_matchups[entry].find_elements(By.XPATH, './/p[@class="game"]')
-
         results = []
+        
         for game in range(len(games)):
             result = games[game].text
-            result = result.strip('  Boxscore').split(' @ ')
-
-            away = result[0]
-            home = result[1]
-
-            awaylist = away.split(' (')
-            away_team = awaylist[0]
-            away_score = awaylist[1].replace(')', '')
-            homelist = home.split(' (')
-            home_team = homelist[0]
-            home_score = homelist[1].replace(')', '')
+            if date >= todays_date:
+                result = result.replace('     Preview', '').split(' @ ')
+                away_team = result[1]
+                home_team = result[0]
+                if ' am ' in result[0]:
+                    home_team = result[0].split(' am ')
+                elif 'TBD ' in result[0]:
+                    home_team = result[0].split('TBD ')
+                else:
+                    home_team = result[0].split(' pm ')
+                home_team = home_team[1]
+                home_score = 'TBD'
+                away_score = 'TBD'
+            else:
+                result = result.replace('  Boxscore', '').split(' @ ')
+                awaylist = result[0].split(' (')
+                away_team = awaylist[0]
+                away_score = awaylist[1].replace(')', '')
+                homelist = result[1].split(' (')
+                home_team = homelist[0]
+                home_score = homelist[1].replace(')', '')
             
-            result = {'Away': {away_team: away_score, 'Home': {home_team: home_score}}}
+            result = {'Home': {team_dict[home_team]: home_score}, 'Away': {team_dict[away_team]: away_score}}
             results.append(result)
-        records[date] = results
+        records[date.strftime('%y-%m-%d')] = results #date is saved as YYYY/MM/DD
 
     with open('baseball_schedule.txt', 'w') as file:
         file.write(json.dumps(records, indent=4, sort_keys=True))
 
     driver.quit()
-
-
-teams_east = ['nyy','tbr','tor','bal','bos','nym','phi','atl','mia','wsn']
-teams_central = ['min','chw','cle','kcr','det','mil','stl','pit','chc','cin']
-teams_west = ['hou','laa','sea','tex','oak','lad','sdp','sfg','ari','col']
-
-all_teams = teams_central + teams_west + teams_east
 
 #Slow implementation speed up with following improvements
 # 1) get batting data and pitching data from single website visit
@@ -182,5 +250,3 @@ def updateData(team):
     with open('baseball_data.txt', 'w') as testfile:
         testfile.write(json.dumps(updatedData, indent=4, sort_keys=True))
 
-
-getSchedule()
