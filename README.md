@@ -1,0 +1,2 @@
+Initially planned on creating a project that would scrape data from different sports sites then run statistical analysis on the data in order to predict match outcomes.
+After running a very basic weighted average prediction on different matchups and seeing my odds matchup within 10% of betting sites I realized the better I made my model the more likely I was to approach their actual values- therefore stopped development.
